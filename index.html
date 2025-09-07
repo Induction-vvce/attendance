@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Student Induction Program - 2025 (Interactive)</title>
+  <style>
+    :root{
+      --bg:#0f1724; --card:#0b1220; --accent:#7c3aed; --muted:#98a2b3; --glass: rgba(255,255,255,0.04);
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Inter,system-ui,-apple-system,'Segoe UI',Roboto,Arial; background: linear-gradient(180deg,#071028 0%, #0f1b2b 60%); color:#e6eef8; min-height:100vh;}
+    header{display:flex;gap:16px;align-items:center;justify-content:space-between;padding:20px 28px;background:linear-gradient(90deg, rgba(124,58,237,0.12), rgba(59,130,246,0.06));backdrop-filter: blur(6px);position:sticky;top:0;z-index:20;border-bottom:1px solid rgba(255,255,255,0.03)}
+    .logo{display:flex;gap:12px;align-items:center}
+    .logo .symbol{width:46px;height:46px;border-radius:10px;background:linear-gradient(135deg,var(--accent),#06b6d4);display:grid;place-items:center;font-weight:700;color:#fff;box-shadow:0 6px 20px rgba(124,58,237,0.18)}
+    h1{margin:0;font-size:20px;letter-spacing:0.2px}
+    p.lead{margin:0;color:var(--muted);font-size:13px}
+
+    .controls{display:flex;gap:12px;align-items:center}
+    .search, .select{background:var(--card);border:1px solid rgba(255,255,255,0.04);padding:8px 12px;border-radius:10px;color:inherit}
+    .search input{background:transparent;border:0;outline:none;color:inherit;width:220px}
+    .btn{background:var(--accent);border:none;padding:8px 12px;border-radius:10px;color:white;font-weight:600;cursor:pointer}
+    .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.06)}
+
+    main{padding:28px}
+    .grid{display:grid;grid-template-columns: repeat(auto-fill,minmax(280px,1fr));gap:18px}
+    .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border-radius:14px;padding:14px;border:1px solid rgba(255,255,255,0.03);box-shadow:0 6px 18px rgba(2,6,23,0.6);transition:transform .18s ease,box-shadow .18s ease}
+    .card:hover{transform:translateY(-6px);box-shadow:0 18px 44px rgba(2,6,23,0.6)}
+    .card h3{margin:0 0 6px;font-size:16px}
+    .card .meta{font-size:12px;color:var(--muted);margin-bottom:10px}
+    .links{display:flex;flex-wrap:wrap;gap:8px}
+    .links a{display:inline-block;padding:8px 10px;border-radius:8px;background:var(--glass);text-decoration:none;color:inherit;border:1px solid rgba(255,255,255,0.02);font-size:13px}
+
+    .badge{display:inline-block;padding:6px 8px;border-radius:999px;background:rgba(255,255,255,0.03);font-size:12px;color:var(--muted)}
+
+    .empty{padding:32px;text-align:center;color:var(--muted)}
+
+    footer{padding:18px 28px;color:var(--muted);font-size:13px;border-top:1px solid rgba(255,255,255,0.02);display:flex;justify-content:space-between}
+
+    /* Responsive tweaks */
+    @media (max-width:640px){.search input{width:120px}.controls{flex-wrap:wrap}.logo h1{font-size:16px}}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">
+      <div class="symbol">S</div>
+      <div>
+        <h1>Student Induction Program - 2025</h1>
+        <p class="lead">Interactive team index — quick access to Google Drive folders and team details</p>
+      </div>
+    </div>
+
+    <div class="controls">
+      <div class="search" title="Search teams or folder names">
+        🔎 <input id="search" placeholder="Search teams or folder..." />
+      </div>
+
+      <div class="select">
+        <label for="team-filter" style="font-size:12px;color:var(--muted);margin-right:6px">Filter:</label>
+        <select id="team-filter" style="background:transparent;border:0;color:inherit;outline:none">
+          <option value="all">All Teams</option>
+        </select>
+      </div>
+
+      <button class="btn" id="export">Export CSV</button>
+      <button class="btn ghost" id="reset">Reset</button>
+    </div>
+  </header>
+
+  <main>
+    <section id="content" class="grid" aria-live="polite"></section>
+    <div id="none" class="empty" style="display:none">No teams match your search.</div>
+  </main>
+
+  <footer>
+    <div>Made with ❤️ — Department Team Index</div>
+    <div class="badge">Last updated: 2025</div>
+  </footer>
+
+  <script>
+    // Data extracted from the uploaded Sheet1.html (abbreviated and structured)
+    const teams = [
+      {group:'Team-1', folders:[{name:'Team-1A', url:'https://drive.google.com/drive/folders/1EIN6114q19PU7JkWKAidpdKcx5y7kjoc?usp=drive_link'},{name:'Team-1B', url:'https://drive.google.com/drive/folders/1b1DHpBGXn0dKyBDeTEmm-s3NzxybwRG6?usp=drive_link'},{name:'Team-1C', url:'https://drive.google.com/drive/folders/1-_KPIK5mS9329R0aPMdC_NbAvDe0Chwf?usp=drive_link'},{name:'Team-1D', url:'https://drive.google.com/drive/folders/1UbArldNfvTTN_acOP0xctjYhdK5q3tUS?usp=drive_link'},{name:'Team-1E', url:'https://drive.google.com/drive/folders/1o0osQRv7-y4VLqIKmz2FO6JlTa7l5zps?usp=drive_link'},{name:'Team-1F', url:'https://drive.google.com/drive/folders/18bG6rAiF6LQBQlfTV8dME7R1L_9IozeD?usp=drive_link'},{name:'Team-1G', url:'https://drive.google.com/drive/folders/1n9QvNwI6ujevK-DnKuk7btd7xHUy-ALl?usp=drive_link'}]},
+      {group:'Team-2', folders:[{name:'Team-2A', url:'https://drive.google.com/drive/folders/10WK7HtjS2iK01SnO1R8uWUF-AwsTeFZA?usp=drive_link'},{name:'Team-2B', url:'https://drive.google.com/drive/folders/10bY8gaJBagAQGOB923Vw1m6qnWCUnWBh?usp=drive_link'},{name:'Team-2C', url:'https://drive.google.com/drive/folders/1-i5RJawWJqPEUz99-4MZ5DEaqrMUh-D2?usp=drive_link'},{name:'Team-2D', url:'https://drive.google.com/drive/folders/1KXYQg5BLSsnIboImJ41FCa69_TgEwWWd?usp=drive_link'},{name:'Team-2E', url:'https://drive.google.com/drive/folders/1idn7STxUu7YGWhJU8Q-48t2NhUfn6H9i?usp=drive_link'},{name:'Team-2F', url:'https://drive.google.com/drive/folders/1adHKR4w1bfISwOjy5l8m5TBlKU3jOIRg?usp=drive_link'},{name:'Team-2G', url:'https://drive.google.com/drive/folders/1wAn55HdkOX7pYQ-S_9qsE9VHS1SB05Er?usp=drive_link'}]},
+      {group:'Team-3', folders:[{name:'Team-3A', url:'https://drive.google.com/drive/folders/1ctb7LPQ7vbOOw6mnN3T39x-aY8iW2uN8?usp=drive_link'},{name:'Team-3B', url:'https://drive.google.com/drive/folders/10LMUb4__t4MROQzwtbs0Ag32mpvpoprx?usp=drive_link'},{name:'Team-3C', url:'https://drive.google.com/drive/folders/1i33k6bKyhSKVW7ds9wu9vUdOtsjZPHkq?usp=drive_link'},{name:'Team-3D', url:'https://drive.google.com/drive/folders/1kEu1OCJnD9wnp8AU-fzw2ajFtXmMaQEv?usp=drive_link'},{name:'Team-3E', url:'https://drive.google.com/drive/folders/16zgVW36Q-ZGOrolguy-IUcOtC-4LvYPS?usp=drive_link'},{name:'Team-3F', url:'https://drive.google.com/drive/folders/1pUEwg8ugOs1j66tuL5_4KAMGBT-XzupW?usp=drive_link'},{name:'Team-3G', url:'https://drive.google.com/drive/folders/1cY1HmGUdjwfZ-v_2Qs84JIXJhXqx1fIQ?usp=drive_link'}]},
+      {group:'Team-4', folders:[{name:'Team-4A', url:'https://drive.google.com/drive/folders/1eCZrJtrgN_GQe-jrkFdWyWLYkRgdoMAi?usp=drive_link'},{name:'Team-4B', url:'https://drive.google.com/drive/folders/1X0mq2i87m8NxSrqOknwcX6IEf6e6t-mh?usp=drive_link'},{name:'Team-4C', url:'https://drive.google.com/drive/folders/1MR4jjeGDu9jaWZaF7UphZSTFLsOYuwHn?usp=drive_link'},{name:'Team-4D', url:'https://drive.google.com/drive/folders/1RlhsQH57cXTAE9pVQ64vH75JkunoN4vP?usp=drive_link'},{name:'Team-4E', url:'https://drive.google.com/drive/folders/1Vd-NqfENNsdL1qfkY0Oe5XxDO1pkEnyg?usp=drive_link'},{name:'Team-4F', url:'https://drive.google.com/drive/folders/1IACy1wMeXGSq1XfRfMq-9X00q5EhnPGE?usp=drive_link'},{name:'Team-4G', url:'https://drive.google.com/drive/folders/1rJg23TiEh0GWLhYBd3JdvIjl9ZeirclD?usp=drive_link'}]},
+      {group:'Team-5', folders:[{name:'Team-5A', url:'https://drive.google.com/drive/folders/1TehgnW3QANwynmcHAKSQ-CcIvkem34cI?usp=drive_link'},{name:'Team-5B', url:'https://drive.google.com/drive/folders/19UkfpfzjwnJnAi8G7CEj1riPO8bn7FG1?usp=drive_link'},{name:'Team-5C', url:'https://drive.google.com/drive/folders/19bjRrh6V7W_kfh_kKuv_xfURRNyXfkWM?usp=drive_link'},{name:'Team-5D', url:'https://drive.google.com/drive/folders/1fRpY0OA5fnx_8yEsgEaCyn3e29DgZZAO?usp=drive_link'},{name:'Team-5E', url:'https://drive.google.com/drive/folders/1DCggXYdeG7ncu3mubnihMvgoCs9uDFK0?usp=drive_link'},{name:'Team-5F', url:'https://drive.google.com/drive/folders/1Oex35Clo7iS1W-B0Y7xvSwLUB8-TdDw9?usp=drive_link'},{name:'Team-5G', url:'https://drive.google.com/drive/folders/1hGbldgGYwQ8GpwPdQ2whTm2EZS5Ah3y8?usp=drive_link'}]},
+      {group:'Team-6', folders:[{name:'Team-6A', url:'https://drive.google.com/drive/folders/17nLxcrXhZkhXlqwT_EZ1KhhQSLV-MWsy?usp=drive_link'},{name:'Team-6B', url:'https://drive.google.com/drive/folders/1qXhtGHJtY_nz_IbAaIeM-odJfNj1pHQu?usp=drive_link'},{name:'Team-6C', url:'https://drive.google.com/drive/folders/1RmiiNtB8AWdbQr3XOnZpdM7lXU9FtWnO?usp=drive_link'},{name:'Team-6D', url:'https://drive.google.com/drive/folders/1yAXVrBrk0mH670DcNrIL6UWQfporuEXB?usp=drive_link'},{name:'Team-6E', url:'https://drive.google.com/drive/folders/1VPmZmXXcxQSrIF9ZC9Xiuc_Bfaaj2lwB?usp=drive_link'},{name:'Team-6F', url:'https://drive.google.com/drive/folders/1yZEgJeaFeWQVisK0P2zlOGt1tUV1UwfF?usp=drive_link'},{name:'Team-6G', url:'https://drive.google.com/drive/folders/1ITK7jbAsHutBe4Cj7_ZIs0BwHP47c86C?usp=drive_link'}]},
+      {group:'Team-7', folders:[{name:'Team-7A', url:'https://drive.google.com/drive/folders/1HJz0Ci0QhXj02ByBqEmQBiUSJZWMkazi?usp=drive_link'},{name:'Team-7B', url:'https://drive.google.com/drive/folders/1Iey2a2EFpGpsXCsBXQxu29vWup4NmQl1?usp=drive_link'},{name:'Team-7C', url:'https://drive.google.com/drive/folders/1gAt5uZaRkYU8vjkCGnl5iq2D7xMCTha9?usp=drive_link'},{name:'Team-7D', url:'https://drive.google.com/drive/folders/1o3w0PGceaLfvVPCM8PAxIB34Hiw8yEbm?usp=drive_link'},{name:'Team-7E', url:'https://drive.google.com/drive/folders/1BhR-EbLPvqrzkCOl9dKzJvmCGjiBinDT?usp=drive_link'},{name:'Team-7F', url:'https://drive.google.com/drive/folders/1SK06jEIvJSRcj-GVSE-QAdjmQPukchnH?usp=drive_link'},{name:'Team-7G', url:'https://drive.google.com/drive/folders/1quiJDSWS7YWiQzgLLrAFFmDSJ9JWgidE?usp=drive_link'}]},
+      {group:'Team-8', folders:[{name:'Team-8A', url:'https://drive.google.com/drive/folders/12tNZmsfSt4LWR9_vWEtJSRoSGR8ywJwd?usp=drive_link'},{name:'Team-8B', url:'https://drive.google.com/drive/folders/1s-5i8VgR6r_pgmJsgi2-7kwW0UuCsWEJ?usp=drive_link'},{name:'Team-8C', url:'https://drive.google.com/drive/folders/1MRwR6TFHAONpLOJcDmEg-og8ZoFcLYX6?usp=drive_link'},{name:'Team-8D', url:'https://drive.google.com/drive/folders/1PX4s4hFdw4mu52UWyHWcRaGrGiorC1_u?usp=drive_link'},{name:'Team-8E', url:'https://drive.google.com/drive/folders/1n9BuVp9KmZytloqnue8OIRCppxAHhoNC?usp=drive_link'},{name:'Team-8F', url:'https://drive.google.com/drive/folders/1fbmkEPh457Ux-tUPg95ko0BQSr-C_5NY?usp=drive_link'},{name:'Team-8G', url:'https://drive.google.com/drive/folders/1lwSjbmI7ofnR15bQaMIM6onkA3chKnIO?usp=drive_link'}]},
+      {group:'Team-9', folders:[{name:'Team-9A', url:'https://drive.google.com/drive/folders/1F5Ir30Hdm59UGTZZi1m2FWUYn6wOpl4L?usp=drive_link'},{name:'Team-9B', url:'https://drive.google.com/drive/folders/1MC7k7jntY1nheIPpTzXXFT3uNqoosM6w?usp=drive_link'},{name:'Team-9C', url:'https://drive.google.com/drive/folders/1vGAFNFrj7_IKunr2MWXfYMWoSmxPpT-E?usp=drive_link'},{name:'Team-9D', url:'https://drive.google.com/drive/folders/1vXAcJ0T56Z0YEYfG0q5u76ipOlMkMmGp?usp=drive_link'},{name:'Team-9E', url:'https://drive.google.com/drive/folders/1mHzrVvIghjWGzbyBigPU8SiipdHsAiMw?usp=drive_link'},{name:'Team-9F', url:'https://drive.google.com/drive/folders/1NNMeCLkDXMSeH-nHtkJwU3Z-kkz7vboU?usp=drive_link'},{name:'Team-9G', url:'https://drive.google.com/drive/folders/1KMrj97-vBy5YOonQ2nXlXvR-h0wSErNV?usp=drive_link'}]},
+      {group:'Team-10', folders:[{name:'Team-10A', url:'https://drive.google.com/drive/folders/1T2F71AfQchrSFCt4jENg4yTeejnPjoFx?usp=drive_link'},{name:'Team-10B', url:'https://drive.google.com/drive/folders/1C91eb1a6GhU79GsY-zsGrz1Ms_53Z1pP?usp=drive_link'},{name:'Team-10C', url:'https://drive.google.com/drive/folders/1TTfR4TlKe-c2ibXHazx8wZeDZhfLre1c?usp=drive_link'},{name:'Team-10D', url:'https://drive.google.com/drive/folders/1fnUpl1gQ_vvh8mhG9_JUElgBrc1KVYCz?usp=drive_link'},{name:'Team-10E', url:'https://drive.google.com/drive/folders/1dHSOAHlM9Qw1Nv80gtm3PFdf3e6IKLmA?usp=drive_link'},{name:'Team-10F', url:'https://drive.google.com/drive/folders/13EHc5xKEO2Jih-3jSWGFuKyqEl9LjfbS?usp=drive_link'},{name:'Team-10G', url:'https://drive.google.com/drive/folders/141ScVVMpRixxds_1o8UQeZAJtW_vYpxA?usp=drive_link'}]}
+    ];
+
+    // Populate filter select
+    const sel = document.getElementById('team-filter');
+    teams.forEach(t=>{
+      const opt = document.createElement('option'); opt.value = t.group; opt.textContent = t.group; sel.appendChild(opt);
+    });
+
+    const content = document.getElementById('content');
+    function render(list){
+      content.innerHTML = '';
+      if(!list.length){ document.getElementById('none').style.display='block'; return }
+      document.getElementById('none').style.display='none';
+      list.forEach(t=>{
+        const card = document.createElement('article'); card.className='card';
+        const h = document.createElement('h3'); h.textContent = t.group; card.appendChild(h);
+        const meta = document.createElement('div'); meta.className='meta'; meta.textContent = `${t.folders.length} folders — click to open`;
+        card.appendChild(meta);
+        const links = document.createElement('div'); links.className='links';
+        t.folders.forEach(f=>{
+          const a = document.createElement('a'); a.href=f.url; a.target='_blank'; a.rel='noopener'; a.textContent=f.name; links.appendChild(a);
+        });
+        card.appendChild(links);
+        content.appendChild(card);
+      });
+    }
+
+    // initial render
+    render(teams);
+
+    // Search & filter
+    const q = document.getElementById('search');
+    q.addEventListener('input', _ => applyFilters());
+    sel.addEventListener('change', _ => applyFilters());
+
+    function applyFilters(){
+      const query = q.value.trim().toLowerCase();
+      const group = sel.value;
+      let out = teams.filter(t=>{
+        if(group!=='all' && t.group!==group) return false;
+        if(!query) return true;
+        // match group or any folder name
+        if(t.group.toLowerCase().includes(query)) return true;
+        return t.folders.some(f=>f.name.toLowerCase().includes(query) || f.url.toLowerCase().includes(query));
+      });
+      render(out);
+    }
+
+    // Export CSV of visible items
+    document.getElementById('export').addEventListener('click', ()=>{
+      const rows = [];
+      document.querySelectorAll('#content .card').forEach(card=>{
+        const grp = card.querySelector('h3').textContent;
+        card.querySelectorAll('.links a').forEach(a=> rows.push([grp, a.textContent, a.href]));
+      });
+      if(rows.length===0){ alert('No data to export'); return }
+      const csv = ['Group,Folder,URL', ...rows.map(r=> r.map(s=> '"'+String(s).replace(/"/g,'""')+'"').join(','))].join('\n');
+      const blob = new Blob([csv],{type:'text/csv'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href=url; a.download='teams.csv'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+    });
+
+    // Reset button
+    document.getElementById('reset').addEventListener('click', ()=>{
+      q.value=''; sel.value='all'; render(teams);
+    });
+  </script>
+</body>
+</html>
